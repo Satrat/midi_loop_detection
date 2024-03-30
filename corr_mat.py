@@ -1,6 +1,6 @@
 import numpy as np
 import math
-
+from util import get_loop_density, get_instrument_type
 
 # Implementation of Correlative Matrix approach presented in:
 # Jia Lien Hsu, Chih Chin Liu, and Arbee L.P. Chen. Discovering
@@ -39,33 +39,61 @@ def is_empty_pattern(pattern):
             return False
     return True
 
-def compare_patterns(p1, p2): #new pattern, existing pattern
+def compare_patterns(p1, p2, min_rep_beats): #new pattern, existing pattern
+    min_rep_beats = int(round(min_rep_beats))
     if len(p1) < len(p2):
-        for i in range(len(p1)):
+        for i in range(min_rep_beats):
             if p1[i] != p2[i]:
                 return 0 #not a substring, theres a mismatch
         return 1 #is a substring
     else:
-        for i in range(len(p2)):
+        for i in range(min_rep_beats):
             if p1[i] != p2[i]:
                 return 0 #not a substring, theres a mismatch
         return 2 #existing pattern is substring of the new one, replace it
         
-def test_loop_exists(pattern_list, pattern):
+def test_loop_exists(pattern_list, pattern, min_rep_beats):
     for i, pat in enumerate(pattern_list):
-        result = compare_patterns(pattern, pat)
+        result = compare_patterns(pattern, pat, min_rep_beats)
         if result == 1:
             return -1 #ignore this pattern since its a substring
         if result == 2:
             return i #replace existing pattern with this new longer one
     return None #we're just appending the new pattern
 
+def filter_sub_loops(candidate_indices):
+    candidate_indices = dict(sorted(candidate_indices.items()))
+
+    repeats = {}
+    final = []
+    for duration in candidate_indices.keys():
+        curr_start = 0
+        curr_end = 0
+        curr_dur = 0
+        for (start,end,beat) in candidate_indices[duration]:
+            if start in repeats and repeats[start][0] == end:
+                continue
+
+            if start == curr_end:
+                curr_end = end
+                curr_dur += duration
+            else:
+                if curr_start != curr_end:
+                    repeats[curr_start] = (curr_end, curr_dur)
+                curr_start = start
+                curr_end = end
+                curr_dur = duration
+
+            final.append((start, end, beat, duration))
+
+    return final
+
 # filter based on defined parameters and remove duplicates
-def get_valid_loops(track, corr_mat, corr_dur, min_rep_notes=4, min_rep_beats=2.0, min_beats=16.0, max_beats=16.0):
+def get_valid_loops(track, corr_mat, corr_dur, min_rep_notes=4, min_rep_beats=2.0, min_beats=4.0, max_beats=32.0):
     min_rep_notes += 1 # don't count bar lines as a repetition
     x_num_elem, y_num_elem = np.where(corr_mat == min_rep_notes)
 
-    valid_indices = []
+    valid_indices = {}
     for i,x in enumerate(x_num_elem):
         y = y_num_elem[i]
         start_x = x - corr_mat[x,y] + 1
@@ -76,12 +104,17 @@ def get_valid_loops(track, corr_mat, corr_dur, min_rep_notes=4, min_rep_beats=2.
         beat_sec, loop_beats = track.get_loop_beats(loop_start_time, loop_end_time)
         loop_beats = round(loop_beats,2)
         if loop_beats <= max_beats and loop_beats >= min_beats:
-            valid_indices.append((x_num_elem[i], y_num_elem[i], beat_sec, loop_beats))
+            if loop_beats not in valid_indices:
+                valid_indices[loop_beats] = []
+            valid_indices[loop_beats].append((x_num_elem[i], y_num_elem[i], beat_sec))
     
+    filtered_indices = filter_sub_loops(valid_indices)
+
     loops = []
     loop_bp = []
     corr_size = corr_mat.shape[0]
-    for start_x,start_y,beat_sec,loop_beats in valid_indices:
+    for start_x,start_y,beat_sec,loop_beats in filtered_indices:
+        #print(start_x,start_y,beat_sec,loop_beats)
         x = start_x
         y = start_y
         while x+1 < corr_size and y+1 < corr_size and corr_mat[x+1,y+1] > corr_mat[x,y]:
@@ -93,17 +126,18 @@ def get_valid_loops(track, corr_mat, corr_dur, min_rep_notes=4, min_rep_beats=2.
         
         if duration >= min_rep_beats and not is_empty_pattern(track.notes[beginning:end]):
             loop = track.notes[beginning:end]
-            if len(loop) < loop_beats:
-                # density filter, TODO: make customizable
+            loop_density = get_loop_density(loop, loop_beats)
+            if loop_density < 0.5:
+                # density filter
                 continue
-            exist_result = test_loop_exists(loops, loop)
+            exist_result = test_loop_exists(loops, loop, min_rep_beats)
             start_sec = track.notes[beginning].start
             end_sec = track.notes[end].start
             if exist_result == None:
                 loops.append(loop)
-                loop_bp.append((start_sec, end_sec, loop_beats))
+                loop_bp.append((start_sec, end_sec, loop_beats, loop_density))
             elif exist_result > 0: #index to replace
                 loops[exist_result] = loop
-                loop_bp[exist_result] = ((start_sec, end_sec, loop_beats))
+                loop_bp[exist_result] = (start_sec, end_sec, loop_beats, loop_density)
 
     return loops, loop_bp

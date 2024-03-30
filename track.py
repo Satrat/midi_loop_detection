@@ -18,7 +18,7 @@ class Track:
                 processed_notes.append(NoteSet(p_midi, start=note.start, end=note.end))
             processed_notes[-1].add_note(note)
 
-        self.notes = processed_notes + self.downbeats #TODO: combine this with downbeats in a list
+        self.notes = processed_notes + self.downbeats #TODO
         self.notes.sort()
         
     def get_tempo_at_time(self, curr_time_wall):
@@ -32,6 +32,18 @@ class Track:
             tempo_end = self.tempo_changes[idx + 1][0]
             if curr_time_wall >= tempo_start and curr_time_wall < tempo_end:
                 return tempo 
+
+    def get_time_sig_at_time(self, curr_time_wall):
+        time_sigs = self.p_midi.time_signature_changes
+        if len(time_sigs) == 1:
+            return (time_sigs[0].numerator, time_sigs[0].denominator)
+        for idx in range(len(time_sigs)):
+            start = time_sigs[idx].time
+            if idx == len(time_sigs)- 1:
+                return (time_sigs[idx].numerator, time_sigs[idx].denominator)
+            end = time_sigs[idx + 1].time
+            if curr_time_wall >= start and curr_time_wall < end:
+                return (time_sigs[idx].numerator, time_sigs[idx].denominator)
             
     def get_loop_beats(self, start_time, end_time):
         tempo = self.get_tempo_at_time(start_time)
