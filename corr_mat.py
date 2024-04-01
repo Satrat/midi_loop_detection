@@ -71,7 +71,7 @@ def filter_sub_loops(candidate_indices):
         curr_end = 0
         curr_dur = 0
         for (start,end,beat) in candidate_indices[duration]:
-            if start in repeats and repeats[start][0] == end:
+            if start in repeats and repeats[start][0] < end:
                 continue
 
             if start == curr_end:
@@ -125,7 +125,10 @@ def get_valid_loops(track, corr_mat, corr_dur, min_rep_notes=4, min_rep_beats=2.
         end = y - corr_mat[x,y] + 1
         
         if duration >= min_rep_beats and not is_empty_pattern(track.notes[beginning:end]):
-            loop = track.notes[beginning:end]
+            loop = track.notes[beginning:(end+1)]
+            #if track.notes[beginning].duration_ticks !=0 or track.notes[end].duration_ticks !=0:
+            #    print("SKIPPING, NOT FULL BAR")
+            #    continue #loops must be full bar
             loop_density = get_loop_density(loop, loop_beats)
             if loop_density < 0.5:
                 # density filter
