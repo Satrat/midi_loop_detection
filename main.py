@@ -2,7 +2,7 @@ from process_file import run_file
 import os
 from datasets import Dataset, load_dataset
 
-DATA_PATH = "D:\\Documents\\GigaMIDI"
+DATA_PATH = "/mnt/d/Documents/GigaMIDI"
 METADATA_NAME = "Expressive_Performance_Detection_NOMML_gigamidi_tismir.csv"
 SHARD_SIZE = 30000
 OUTPUT_NAME = "gigamidi_non_expressive_loops"
@@ -24,6 +24,7 @@ if __name__ == "__main__":
     unique_files = [{"file_path": os.path.join(DATA_PATH, file_path), "file_name": file_path} for file_path in unique_files]
     unique_files_dataset = Dataset.from_list(unique_files)
     print(f"filtered to {len(unique_files_dataset)} unique MIDI files, non-expressive with time signatures")
+    unique_files_dataset = unique_files_dataset.shuffle(seed=42)
 
     num_shards = int(round(len(unique_files_dataset) / SHARD_SIZE))
     print(f"Splitting dataset in {num_shards} shards")
@@ -36,7 +37,7 @@ if __name__ == "__main__":
             batched=True,
             batch_size=1,
             writer_batch_size=1,
-            num_proc=8
+            num_proc=16
         )
 
         csv_path = os.path.join(output_path, OUTPUT_NAME + "_" + str(shard_idx) + ".csv")
