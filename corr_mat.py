@@ -71,7 +71,7 @@ def filter_sub_loops(candidate_indices):
         curr_end = 0
         curr_dur = 0
         for (start,end,beat) in candidate_indices[duration]:
-            if start in repeats and repeats[start][0] < end:
+            if start in repeats and repeats[start][0] == end:
                 continue
 
             if start == curr_end:
