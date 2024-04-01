@@ -2,6 +2,9 @@ import pretty_midi
 from corr_mat import *
 from track import Track
 from util import create_loop_dict
+import warnings
+warnings.filterwarnings("error")
+import os
 
 def run_file(data):
     file_path = data["file_path"][0]
@@ -15,10 +18,16 @@ def run_file(data):
     data["beats"] = []
     data["density"] = []
 
+    if not os.path.exists(file_path):
+        print(f"File {file_path} does not exist, skipping")
+        return data
     try:
         pm = pretty_midi.PrettyMIDI(file_path)
+    except RuntimeWarning:
+        #print(f"Invalid time/tempo data found in {file_path}, skipping")
+        return data
     except:
-        print(f"failed to parse {file_path}, skipping")
+        print(f"MIDI file {file_path} could not be parsed, skipping")
         return data
 
     for idx, instrument in enumerate(pm.instruments):

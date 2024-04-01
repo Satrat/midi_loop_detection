@@ -4,7 +4,7 @@ from datasets import Dataset, load_dataset
 
 DATA_PATH = "/mnt/d/Documents/GigaMIDI"
 METADATA_NAME = "Expressive_Performance_Detection_NOMML_gigamidi_tismir.csv"
-SHARD_SIZE = 30000
+SHARD_SIZE = 20000
 OUTPUT_NAME = "gigamidi_non_expressive_loops"
 
 if __name__ == "__main__":
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     num_shards = int(round(len(unique_files_dataset) / SHARD_SIZE))
     print(f"Splitting dataset in {num_shards} shards")
     print(f"Saving shards to {output_path}")
-    for shard_idx in range(num_shards):
+    for shard_idx in range(1,num_shards):
         shard = unique_files_dataset.shard(num_shards=num_shards, index=shard_idx)
         shard = shard.map(
             run_file,
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             batched=True,
             batch_size=1,
             writer_batch_size=1,
-            num_proc=16
+            num_proc=8
         )
 
         csv_path = os.path.join(output_path, OUTPUT_NAME + "_" + str(shard_idx) + ".csv")
