@@ -2,8 +2,6 @@ import pretty_midi
 from corr_mat import *
 from track import Track
 from util import create_loop_dict
-import warnings
-warnings.filterwarnings("error")
 import os
 
 def run_file(data):
@@ -23,9 +21,6 @@ def run_file(data):
         return data
     try:
         pm = pretty_midi.PrettyMIDI(file_path)
-    except RuntimeWarning:
-        #print(f"Invalid time/tempo data found in {file_path}, skipping")
-        return data
     except:
         print(f"MIDI file {file_path} could not be parsed, skipping")
         return data
