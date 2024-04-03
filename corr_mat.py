@@ -9,7 +9,7 @@ from util import get_loop_density, get_instrument_type
 def calc_correlation(melody_seq):
     corr_size = len(melody_seq)
     corr_mat = np.zeros((corr_size, corr_size), dtype='int32')
-    corr_dur = np.zeros((corr_size, corr_size), dtype='float')
+    corr_dur = np.zeros((corr_size, corr_size), dtype='float32')
 
     for j in range(1, corr_size):
         if melody_seq[0] == melody_seq[j] and melody_seq[0].is_barline():

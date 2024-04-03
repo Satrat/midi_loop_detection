@@ -29,6 +29,8 @@ def run_file(data):
         instrument_type = get_instrument_type(instrument)
         track = Track(pm, instrument)
         note_list = track.notes
+        if len(note_list) > 50000:
+            continue
         lead_mat, lead_dur = calc_correlation(note_list)
         _, loop_endpoints = get_valid_loops(track, lead_mat, lead_dur)
         for endpoint in loop_endpoints:
