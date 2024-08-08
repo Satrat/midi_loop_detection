@@ -1,4 +1,4 @@
-from process_file import run_file
+from loops_nomml.process_file import detect_loops
 import os
 from datasets import Dataset, load_dataset
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     for shard_idx in range(num_shards):
         shard = unique_files_dataset.shard(num_shards=num_shards, index=shard_idx)
         shard = shard.map(
-            run_file,
+            detect_loops,
             remove_columns=['file_path', 'file_name'],
             batched=True,
             batch_size=1,
