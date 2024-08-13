@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
-from miditok.utils import get_beats_ticks
+from miditok.utils import get_bars_ticks
 from miditok.constants import CLASS_OF_INST, INSTRUMENT_CLASSES
 from symusic import Score, Track, TimeSignature
 
@@ -29,19 +29,6 @@ def create_loop_dict(endpoint_data, track_idx, instrument_type):
     }
 
 
-"""def get_time_sig_or_tempo_at_tick(list_: TempoTickList | TimeSignatureTickList, tick: int) -> TimeSignature | Tempo:
-    if len(list_) == 0:
-        return TimeSignature(0, 4, 4) if isinstance(list_, TimeSignatureTickList) else Tempo(0, 120)
-
-    idx = 0
-    for i, ts_or_tempo in enumerate(list_):
-        if ts_or_tempo.time > tick:
-            break
-        idx = i
-
-    return list_[idx]"""  # TODO remove this, unused?
-
-
 def detect_loops(score: Score):
     data = {
         "track_idx": [],
@@ -55,17 +42,17 @@ def detect_loops(score: Score):
     if len(score.time_signatures) == 0:
         score.time_signatures.append(TimeSignature(0, 4, 4))
 
-    beats_ticks = np.array(get_beats_ticks(score))
+    bars_ticks = np.array(get_bars_ticks(score))
     for idx, track in enumerate(score.tracks):
         # cut beats_tick at the end of the track
-        if any(track_beats_mask := beats_ticks > track.end()):
-            beats_ticks_track = beats_ticks[:np.nonzero(track_beats_mask)[0][0]]
+        if any(track_beats_mask := bars_ticks > track.end()):
+            bars_ticks_track = bars_ticks[:np.nonzero(track_beats_mask)[0][0]]
         else:
-            beats_ticks_track = beats_ticks
+            bars_ticks_track = bars_ticks
         instrument_type = get_instrument_type(track)
-        note_sets = compute_note_sets(track.notes, beats_ticks_track)
+        note_sets = compute_note_sets(track.notes, bars_ticks_track)
         lead_mat = calc_correlation(note_sets)
-        _, loop_endpoints = get_valid_loops(note_sets, lead_mat, beats_ticks_track)
+        _, loop_endpoints = get_valid_loops(note_sets, lead_mat, bars_ticks_track)
         for endpoint in loop_endpoints:
             loop_dict = create_loop_dict(endpoint, idx, instrument_type)
             for key in loop_dict.keys():
