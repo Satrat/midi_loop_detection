@@ -1,11 +1,11 @@
-from loops_nomml.process_file import detect_loops
+from loops_nomml.process_file import detect_loops_from_path
 import os
 from datasets import Dataset, load_dataset
 
 DATA_PATH = "D:\\Documents\\GigaMIDI"
 METADATA_NAME = "Expressive_Performance_Detection_NOMML_gigamidi_tismir.csv"
 SHARD_SIZE = 20000
-OUTPUT_NAME = "gigamidi_non_expressive_loops"
+OUTPUT_NAME = "gigamidi_non_expressive_loops_take2"
 
 if __name__ == "__main__":
     metadata_path = os.path.join(DATA_PATH, METADATA_NAME)
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     for shard_idx in range(24, num_shards):
         shard = unique_files_dataset.shard(num_shards=num_shards, index=shard_idx)
         shard = shard.map(
-            detect_loops,
+            detect_loops_from_path,
             remove_columns=['file_path', 'file_name'],
             batched=True,
             batch_size=1,
