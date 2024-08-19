@@ -112,7 +112,7 @@ def detect_loops(score: Score) -> Dict[str,List]:
         else:
             beats_ticks_track = beats_ticks
 
-        if len(bars_ticks_track) > 10000:
+        if len(bars_ticks_track) > MAX_NOTES_PER_TRACK:
             print(f"Skipping track {idx} due to ill-formed bars")
             continue   
 

@@ -190,7 +190,7 @@ def get_duration_beats(start: int, end: int, ticks_beats: Sequence[int]) -> floa
         num_beats_after = (ticks_beats[idx_beat_after] - ticks_beats[end]) / beat_length_after
     else:
         num_beats_after = 0
-    return float(idx_beat_last_in - idx_beat_first_in + num_beats_before + num_beats_after)
+    return float(idx_beat_last_in - idx_beat_first_in + num_beats_before + num_beats_after - 1)
 
 
 def get_valid_loops(
