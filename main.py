@@ -5,7 +5,7 @@ from datasets import Dataset, load_dataset
 DATA_PATH = "D:\\Documents\\GigaMIDI"
 METADATA_NAME = "Expressive_Performance_Detection_NOMML_gigamidi_tismir.csv"
 SHARD_SIZE = 20000
-OUTPUT_NAME = "gigamidi_non_expressive_loops_take2"
+OUTPUT_NAME = "gigamidi_non_expressive_loops"
 
 if __name__ == "__main__":
     metadata_path = os.path.join(DATA_PATH, METADATA_NAME)
