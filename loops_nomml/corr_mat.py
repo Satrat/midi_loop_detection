@@ -117,6 +117,14 @@ def test_loop_exists(loop_list: Sequence[Sequence[NoteSet]], loop: Sequence[Note
 
 def filter_sub_loops(candidate_indices: Dict[float, Tuple[int, int]]) -> Sequence[Tuple[int, int, float]]:
     """
+    Processes endpoints for identified loops, keeping only the largest 
+    unique loop when multiple loops intersect, thus eliminating "sub loops."
+    For instance, if a 4 bar loop is made up of two 2 bar loops, only a 
+    single 2 bar loop will be returned. 
+
+    :param candidate_indices: dictionary of (start_tick, end_tick) for each 
+        identified group, keyed by loop length in beats
+    :return: filtered list of loops with subloops removed
     """
     candidate_indices = dict(sorted(candidate_indices.items()))
 

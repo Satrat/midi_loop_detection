@@ -29,7 +29,7 @@ if __name__ == "__main__":
     num_shards = int(round(len(unique_files_dataset) / SHARD_SIZE))
     print(f"Splitting dataset in {num_shards} shards")
     print(f"Saving shards to {output_path}")
-    for shard_idx in range(24, num_shards):
+    for shard_idx in range(0, num_shards):
         shard = unique_files_dataset.shard(num_shards=num_shards, index=shard_idx)
         shard = shard.map(
             detect_loops_from_path,
