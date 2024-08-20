@@ -126,7 +126,7 @@ def detect_loops(score: Score, file_path: str = None) -> Dict[str,List]:
             loop_dict = create_loop_dict(endpoint, idx, instrument_type)
             for key in loop_dict.keys():
                 data[key].append(loop_dict[key])
-                if file_path is not None:
-                    data["file_path"].append(file_path)
+            if file_path is not None:
+                data["file_path"].append(file_path)
 
     return data
