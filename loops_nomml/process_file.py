@@ -68,9 +68,9 @@ def detect_loops_from_path(file_info: Dict) -> Dict[str,List]:
             "duration_beats": [],
             "note_density": [],
         }
-    return detect_loops(score)
+    return detect_loops(score, file_path=file_path)
 
-def detect_loops(score: Score) -> Dict[str,List]:
+def detect_loops(score: Score, file_path: str = None) -> Dict[str,List]:
     """
      Given a MIDI score, locate all loops present across off the tracks
 
@@ -85,6 +85,8 @@ def detect_loops(score: Score) -> Dict[str,List]:
         "duration_beats": [],
         "note_density": [],
     }
+    if file_path is not None:
+        data["file_path"] = []
     # Check that there is a time signature. There might be none with abc files
     if len(score.time_signatures) == 0:
         score.time_signatures.append(TimeSignature(0, 4, 4))
@@ -124,5 +126,7 @@ def detect_loops(score: Score) -> Dict[str,List]:
             loop_dict = create_loop_dict(endpoint, idx, instrument_type)
             for key in loop_dict.keys():
                 data[key].append(loop_dict[key])
+                if file_path is not None:
+                    data["file_path"].append(file_path)
 
     return data
